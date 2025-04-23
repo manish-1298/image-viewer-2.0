@@ -25,11 +25,11 @@ def index():
         urls = request.form.get("urls")
         if urls:
             urls = urls.split("\n")
-            for idx, url in enumerate(urls, 1):  # Start counting from 1
+            for url in urls:
                 url = url.strip()
                 img_data = fetch_image(url)
                 if img_data:
-                    images.append((img_data, url, idx))  # Include index here
+                    images.append((img_data, url))  # Ensure it passes as a tuple
     return render_template("index.html", images=images)
 
 if __name__ == "__main__":
