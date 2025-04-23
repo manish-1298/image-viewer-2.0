@@ -79,6 +79,10 @@
       margin-bottom: 5px;
       color: #333;
       width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
     img {
@@ -86,6 +90,7 @@
       height: auto;
       border-radius: 5px;
       background: white;
+      transition: transform 0.3s ease;
     }
 
     .url-row {
@@ -130,7 +135,6 @@
       background: #d0d0d0;
     }
 
-    /* Scroll to Top Button Styling */
     #scrollTopWrapper {
       position: fixed;
       bottom: 20px;
@@ -147,9 +151,9 @@
     .scroll-icon {
         background-color: #00aaff;
         color: white;
-        font-size: 36px;         /* Increased size */
-        font-weight: 900;        /* Made thicker */
-        font-family: monospace;  /* Optional: for a consistent arrow shape */
+        font-size: 36px;
+        font-weight: 900;
+        font-family: monospace;
         border-radius: 50%;
         width: 50px;
         height: 50px;
@@ -183,13 +187,27 @@
         transform: translateY(0);
       }
     }
+
+    .rotate-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #007BFF;
+      transition: transform 0.2s;
+    }
+
+    .rotate-btn:hover {
+      color: #0056b3;
+      transform: scale(1.2);
+    }
   </style>
 </head>
 <body>
   <h1>Enter Image URLs</h1>
   <div class="form-container">
     <form id="imageForm" style="display: flex; width: 100%; align-items: center;">
-      <textarea id="urls" placeholder="Enter each image URL on a new line"></textarea>
+      <textarea id="urls" name="urls" placeholder="Enter each image URL on a new line"></textarea>
       <button type="submit">Load Images</button>
     </form>
   </div>
@@ -197,8 +215,12 @@
   <div id="imageGallery">
     {% for img_data, url, idx in images %}
     <div class="image-container">
-      <div class="image-number">Image {{ idx }}</div>
-      <img src="data:image/png;base64,{{ img_data }}" alt="Image" />
+      <div class="image-number">
+        Image {{ idx }}
+        <button class="rotate-btn" onclick="rotateImage(this, -90)">⟲</button>
+        <button class="rotate-btn" onclick="rotateImage(this, 90)">⟳</button>
+      </div>
+      <img src="data:image/png;base64,{{ img_data }}" alt="Image" data-rotate="0" />
       <div class="url-row">
         <p class="url-text" title="{{ url }}">{{ url }}</p>
         <button class="copy-btn" onclick="copyToClipboard(this, '{{ url }}')">Copy</button>
@@ -207,14 +229,12 @@
     {% endfor %}
   </div>
 
-  <!-- Scroll to Top Button -->
   <div id="scrollTopWrapper" onclick="scrollToTop()">
     <div class="scroll-icon">↑</div>
     <div class="scroll-text">Back to Top</div>
   </div>
 
   <script>
-    // Copy URL function
     function copyToClipboard(button, url) {
       navigator.clipboard.writeText(url).then(() => {
         button.textContent = "Copied!";
@@ -224,7 +244,6 @@
       });
     }
 
-    // Form submission
     document.getElementById("imageForm").addEventListener("submit", function (event) {
       event.preventDefault();
       const urls = document.getElementById("urls").value.split("\n");
@@ -239,11 +258,12 @@
 
           const number = document.createElement("div");
           number.className = "image-number";
-          number.textContent = `Image ${index + 1}`;
+          number.innerHTML = `Image ${index + 1} <button class="rotate-btn" onclick="rotateImage(this, -90)">⟲</button><button class="rotate-btn" onclick="rotateImage(this, 90)">⟳</button>`;
 
           const img = document.createElement("img");
           img.src = url;
           img.alt = "Image";
+          img.setAttribute("data-rotate", "0");
 
           const urlRow = document.createElement("div");
           urlRow.className = "url-row";
@@ -269,7 +289,15 @@
       });
     });
 
-    // Show scroll-to-top button
+    function rotateImage(button, angle) {
+      const container = button.closest('.image-container');
+      const img = container.querySelector('img');
+      let current = parseInt(img.getAttribute('data-rotate') || '0');
+      current = (current + angle) % 360;
+      img.style.transform = `rotate(${current}deg)`;
+      img.setAttribute('data-rotate', current);
+    }
+
     window.onscroll = function () {
       const btnWrapper = document.getElementById("scrollTopWrapper");
       btnWrapper.style.display =
@@ -278,7 +306,6 @@
           : "none";
     };
 
-    // Scroll to top smoothly
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
