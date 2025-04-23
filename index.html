@@ -73,16 +73,40 @@
       align-items: center;
     }
 
+    .image-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
     .image-number {
       font-weight: bold;
       font-size: 13px;
-      margin-bottom: 5px;
       color: #333;
-      width: 100%;
+      text-align: center;
+      flex: 1;
+    }
+
+    .rotate-icons {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+      gap: 8px;
+    }
+
+    .rotate-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      color: grey;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .rotate-btn:hover {
+      color: #444;
+      transform: scale(1.2);
     }
 
     img {
@@ -149,18 +173,18 @@
     }
 
     .scroll-icon {
-        background-color: #00aaff;
-        color: white;
-        font-size: 36px;
-        font-weight: 900;
-        font-family: monospace;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        line-height: 50px;
-        text-align: center;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease;
+      background-color: #00aaff;
+      color: white;
+      font-size: 36px;
+      font-weight: 900;
+      font-family: monospace;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
     }
 
     .scroll-icon:hover {
@@ -178,36 +202,16 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .rotate-btn {
-      background: none;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-      color: #007BFF;
-      transition: transform 0.2s;
-    }
-
-    .rotate-btn:hover {
-      color: #0056b3;
-      transform: scale(1.2);
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <h1>Enter Image URLs</h1>
   <div class="form-container">
-    <form id="imageForm" style="display: flex; width: 100%; align-items: center;">
-      <textarea id="urls" name="urls" placeholder="Enter each image URL on a new line"></textarea>
+    <form id="imageForm" method="POST" style="display: flex; width: 100%; align-items: center;">
+      <textarea name="urls" id="urls" placeholder="Enter each image URL on a new line"></textarea>
       <button type="submit">Load Images</button>
     </form>
   </div>
@@ -215,12 +219,14 @@
   <div id="imageGallery">
     {% for img_data, url, idx in images %}
     <div class="image-container">
-      <div class="image-number">
-        Image {{ idx }}
-        <button class="rotate-btn" onclick="rotateImage(this, -90)">⟲</button>
-        <button class="rotate-btn" onclick="rotateImage(this, 90)">⟳</button>
+      <div class="image-header">
+        <span class="image-number">Image {{ idx }}</span>
+        <div class="rotate-icons">
+          <button class="rotate-btn" onclick="rotateImage(this, -90)">⟲</button>
+          <button class="rotate-btn" onclick="rotateImage(this, 90)">⟳</button>
+        </div>
       </div>
-      <img src="data:image/png;base64,{{ img_data }}" alt="Image" data-rotate="0" />
+      <img src="data:image/png;base64,{{ img_data }}" alt="Image" />
       <div class="url-row">
         <p class="url-text" title="{{ url }}">{{ url }}</p>
         <button class="copy-btn" onclick="copyToClipboard(this, '{{ url }}')">Copy</button>
@@ -229,6 +235,7 @@
     {% endfor %}
   </div>
 
+  <!-- Scroll to Top Button -->
   <div id="scrollTopWrapper" onclick="scrollToTop()">
     <div class="scroll-icon">↑</div>
     <div class="scroll-text">Back to Top</div>
@@ -244,58 +251,12 @@
       });
     }
 
-    document.getElementById("imageForm").addEventListener("submit", function (event) {
-      event.preventDefault();
-      const urls = document.getElementById("urls").value.split("\n");
-      const gallery = document.getElementById("imageGallery");
-      gallery.innerHTML = "";
-
-      urls.forEach((url, index) => {
-        url = url.trim();
-        if (url) {
-          const container = document.createElement("div");
-          container.className = "image-container";
-
-          const number = document.createElement("div");
-          number.className = "image-number";
-          number.innerHTML = `Image ${index + 1} <button class="rotate-btn" onclick="rotateImage(this, -90)">⟲</button><button class="rotate-btn" onclick="rotateImage(this, 90)">⟳</button>`;
-
-          const img = document.createElement("img");
-          img.src = url;
-          img.alt = "Image";
-          img.setAttribute("data-rotate", "0");
-
-          const urlRow = document.createElement("div");
-          urlRow.className = "url-row";
-
-          const caption = document.createElement("p");
-          caption.className = "url-text";
-          caption.textContent = url;
-          caption.title = url;
-
-          const copyBtn = document.createElement("button");
-          copyBtn.className = "copy-btn";
-          copyBtn.textContent = "Copy";
-          copyBtn.onclick = () => copyToClipboard(copyBtn, url);
-
-          urlRow.appendChild(caption);
-          urlRow.appendChild(copyBtn);
-
-          container.appendChild(number);
-          container.appendChild(img);
-          container.appendChild(urlRow);
-          gallery.appendChild(container);
-        }
-      });
-    });
-
-    function rotateImage(button, angle) {
-      const container = button.closest('.image-container');
-      const img = container.querySelector('img');
-      let current = parseInt(img.getAttribute('data-rotate') || '0');
-      current = (current + angle) % 360;
-      img.style.transform = `rotate(${current}deg)`;
-      img.setAttribute('data-rotate', current);
+    function rotateImage(button, degree) {
+      const img = button.closest(".image-container").querySelector("img");
+      const current = img.getAttribute("data-rotation") || "0";
+      const newRotation = (parseInt(current) + degree) % 360;
+      img.style.transform = `rotate(${newRotation}deg)`;
+      img.setAttribute("data-rotation", newRotation);
     }
 
     window.onscroll = function () {
