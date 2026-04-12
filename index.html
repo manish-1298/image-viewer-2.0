@@ -110,6 +110,29 @@
     }
 
     .copy-btn {
+      background: #007BFF;
+      border: 1px solid #007BFF;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: white;
+      transition: all 0.2s;
+      min-width: 60px;
+      height: 26px;
+      margin-left: 0;
+    }
+
+    .copy-btn:hover {
+      background: #0056b3;
+      border-color: #0056b3;
+    }
+
+    .copy-btn:active {
+      background: #004494;
+    }
+
+    .edit-btn {
       background: #f0f0f0;
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -122,13 +145,372 @@
       height: 26px;
     }
 
-    .copy-btn:hover {
+    .edit-btn:hover {
       background: #e0e0e0;
     }
 
-    .copy-btn:active {
-      background: #d0d0d0;
+    /* ── Editor Modal ── */
+    #editorOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
     }
+
+    #editorOverlay.open {
+      display: flex;
+    }
+
+    #editorModal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      width: 96vw;
+      max-width: 1200px;
+      height: 94vh;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (max-width: 600px) {
+      #editorModal {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        padding: 12px;
+      }
+      #editorBody {
+        flex-direction: column;
+      }
+      #editorControls {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .ctrl-section {
+        flex: 1;
+        min-width: 140px;
+      }
+    }
+
+    #editorModal h2 {
+      margin: 0;
+      font-size: 15px;
+      color: #333;
+    }
+
+    /* image + controls side by side */
+    #editorBody {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    #editorImgWrap {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    /* Resize container — exactly matches the image size */
+    #resizeContainer {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+      max-width: 100%;
+      max-height: 100%;
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    #editorImg {
+      display: block;
+      border-radius: 3px;
+      cursor: grab;
+      object-fit: fill;
+      will-change: width, height;
+    }
+
+    /* Resize handles */
+    .rh {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      background: #007BFF;
+      border: 1px solid #fff;
+      border-radius: 1px;
+      box-shadow: 0 0 2px rgba(0,0,0,0.4);
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.15s;
+      pointer-events: none;
+    }
+
+    #resizeContainer.handles-on .rh { opacity: 1; pointer-events: all; }
+
+    /* Positions — centered exactly on each edge */
+    .rh-nw { top:0;    left:0;   transform: translate(-50%, -50%); cursor: nw-resize; }
+    .rh-n  { top:0;    left:50%; transform: translate(-50%, -50%); cursor: n-resize; }
+    .rh-ne { top:0;    right:0;  transform: translate(50%, -50%);  cursor: ne-resize; }
+    .rh-e  { top:50%;  right:0;  transform: translate(50%, -50%);  cursor: e-resize; }
+    .rh-se { bottom:0; right:0;  transform: translate(50%, 50%);   cursor: se-resize; }
+    .rh-s  { bottom:0; left:50%; transform: translate(-50%, 50%);  cursor: s-resize; }
+    .rh-sw { bottom:0; left:0;   transform: translate(-50%, 50%);  cursor: sw-resize; }
+    .rh-w  { top:50%;  left:0;   transform: translate(-50%, -50%); cursor: w-resize; }
+
+    /* Size label */
+    #resizeLabel {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #666;
+      white-space: nowrap;
+      font-family: monospace;
+      pointer-events: none;
+    }
+
+    /* right panel */
+    #editorControls {
+      width: 170px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-self: stretch;
+    }
+
+    #editorControls .ctrl-spacer {
+      flex: 1;
+    }
+
+    .ctrl-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .ctrl-label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .slider-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-row-header label {
+      font-size: 13px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .slider-row-header span {
+      font-size: 11px;
+      color: #666;
+      min-width: 28px;
+      text-align: right;
+    }
+
+    .slider-row input[type=range] {
+      width: 100%;
+      height: 4px;
+      accent-color: #007BFF;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+      font-size: unset;
+      background: none;
+      box-shadow: none;
+      margin-left: 0;
+    }
+
+    /* Rotation dial */
+    .rotation-dial-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #rotationDial {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      border: 2px solid #ddd;
+      position: relative;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #rotationDial:active { cursor: grabbing; }
+
+    /* dashed inner ring for reference */
+    #rotationDial::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      border: 1px dashed #ccc;
+    }
+
+    /* the pointer — starts from just outside center, ends near edge */
+    #dialPointer {
+      position: absolute;
+      width: 2px;
+      /* from 14px (just past center dot) to 8px from top edge */
+      height: 22px;
+      background: #007BFF;
+      border-radius: 2px 2px 0 0;
+      left: 50%;
+      top: 8px;
+      /* rotate around the dial center (40px from top) */
+      transform-origin: center 32px;
+      transform: translateX(-50%);
+    }
+
+    /* center dot — sits on top of everything */
+    #dialCenter {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #007BFF;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      pointer-events: none;
+      box-shadow: 0 0 3px rgba(0,0,0,0.2);
+    }
+
+    #dialAngleLabel {
+      font-family: monospace;
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+    }
+
+    /* icon buttons row */
+    .icon-btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #f5f5f5;
+      color: #333;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      margin-left: 0;
+      padding: 0;
+    }
+
+    .icon-btn:hover {
+      background: #e0e0e0;
+      border-color: #bbb;
+    }
+
+    /* bottom actions (inside right panel) */
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .editor-actions button {
+      font-size: 13px;
+      padding: 7px 0;
+      margin-left: 0;
+      width: 100%;
+    }
+
+    #resetBtn {
+      background: #f0f0f0;
+      color: #555;
+      border: 1px solid #ddd;
+    }
+
+    #resetBtn:hover { background: #e0e0e0; }
+
+    #closeEditorBtn {
+      background: #dc3545;
+    }
+
+    #closeEditorBtn:hover { background: #b02a37; }
+
+    #editorCloseX {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #dc3545;
+      color: white;
+      border: none;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0;
+      margin: 0;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+
+    #editorCloseX:hover { background: #b02a37; }
 
     /* Scroll to Top Button Styling */
     #scrollTopWrapper {
@@ -147,27 +529,27 @@
     .scroll-icon {
         background-color: #00aaff;
         color: white;
-        font-size: 36px;         /* Increased size */
-        font-weight: 900;        /* Made thicker */
-        font-family: monospace;  /* Optional: for a consistent arrow shape */
+        font-size: 24px;
+        font-weight: 900;
+        font-family: monospace;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        line-height: 50px;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
         text-align: center;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
     }
 
     .scroll-icon:hover {
       background-color: #0077cc;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       transform: scale(1.05);
     }
 
     .scroll-text {
-      margin-top: 5px;
-      font-size: 12px;
+      margin-top: 4px;
+      font-size: 10px;
       color: #007BFF;
       font-weight: bold;
       text-transform: uppercase;
@@ -183,28 +565,188 @@
         transform: translateY(0);
       }
     }
+
+    /* Fixed shrinking header */
+    #siteHeader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      transition: padding 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: none;
+    }
+
+    #siteHeader.shrunk {
+      flex-direction: row;
+      justify-content: center;
+      gap: 12px;
+      padding: 6px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    #siteHeader h1 {
+      margin: 0.67em 0;
+      color: #333;
+      transition: font-size 0.3s ease, margin 0.3s ease;
+    }
+
+    #siteHeader.shrunk h1 {
+      font-size: 16px;
+      white-space: nowrap;
+      margin: 0;
+    }
+
+    #siteHeader .form-container {
+      transition: width 0.3s ease, max-width 0.3s ease, padding 0.3s ease;
+    }
+
+    #siteHeader textarea {
+      height: 50px;
+      font-size: 16px;
+      transition: height 0.3s ease, font-size 0.3s ease, padding 0.3s ease;
+    }
+
+    #siteHeader.shrunk .form-container {
+      width: auto;
+      flex: 1;
+      max-width: 500px;
+      padding: 5px 8px;
+    }
+
+    #siteHeader.shrunk textarea {
+      height: 32px;
+      font-size: 13px;
+      padding: 5px 8px;
+    }
+
+    #siteHeader.shrunk button {
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+
+    /* Placeholder so content doesn't hide under fixed header */
+    #headerPlaceholder {
+      width: 100%;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
-  <h1>Image Viewer</h1>
-  <div class="form-container">
-    <form id="imageForm" style="display: flex; width: 100%; align-items: center;">
-      <textarea id="urls" placeholder="Paste image URLs (one per line)"></textarea>
-      <button type="submit">Load Images</button>
-    </form>
+  <div id="siteHeader">
+    <h1>Image Viewer</h1>
+    <div class="form-container">
+      <form id="imageForm" style="display: flex; width: 100%; align-items: center;">
+        <textarea id="urls" placeholder="Paste image URLs (one per line)"></textarea>
+        <button type="submit">Load Images</button>
+      </form>
+    </div>
   </div>
+  <div id="headerPlaceholder"></div>
   <hr />
-  <div id="imageGallery">
-    {% for img_data, url, idx in images %}
-    <div class="image-container">
-      <div class="image-number">Image {{ idx }}</div>
-      <img src="data:image/png;base64,{{ img_data }}" alt="Image" />
-      <div class="url-row">
-        <p class="url-text" title="{{ url }}">{{ url }}</p>
-        <button class="copy-btn" onclick="copyToClipboard(this, '{{ url }}')">Copy</button>
+  <div id="imageGallery"></div>
+
+  <!-- Image Editor Modal -->
+  <div id="editorOverlay">
+    <div id="editorModal">
+      <button id="editorCloseX" onclick="closeEditor()" title="Close">✕</button>
+      <h2 id="editorTitle">Edit Image</h2>
+
+      <div id="editorBody">
+        <!-- Image -->
+        <div id="editorImgWrap">
+          <div id="resizeContainer">
+            <img id="editorImg" src="" alt="Edit preview" />
+            <!-- 8 handles -->
+            <div class="rh rh-nw" data-dir="nw"></div>
+            <div class="rh rh-n"  data-dir="n"></div>
+            <div class="rh rh-ne" data-dir="ne"></div>
+            <div class="rh rh-e"  data-dir="e"></div>
+            <div class="rh rh-se" data-dir="se"></div>
+            <div class="rh rh-s"  data-dir="s"></div>
+            <div class="rh rh-sw" data-dir="sw"></div>
+            <div class="rh rh-w"  data-dir="w"></div>
+            <span id="resizeLabel"></span>
+          </div>
+        </div>
+
+        <!-- Right Controls -->
+        <div id="editorControls">
+
+          <!-- Brightness & Contrast -->
+          <div class="ctrl-section" style="padding-top: 16px;">
+            <div class="ctrl-label">Adjust</div>
+            <div class="slider-row">
+              <div class="slider-row-header">
+                <label>Brightness</label>
+                <span id="brightnessVal">0</span>
+              </div>
+              <input type="range" id="brightnessSlider" min="-100" max="100" value="0" oninput="applyFilters()">
+            </div>
+            <div class="slider-row">
+              <div class="slider-row-header">
+                <label>Contrast</label>
+                <span id="contrastVal">0</span>
+              </div>
+              <input type="range" id="contrastSlider" min="-100" max="100" value="0" oninput="applyFilters()">
+            </div>
+          </div>
+
+          <!-- Rotate -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Rotate</div>
+            <div class="icon-btn-row">
+              <button class="icon-btn" onclick="rotateImage(-90)" title="Rotate Left">↺</button>
+              <button class="icon-btn" onclick="rotateImage(90)"  title="Rotate Right">↻</button>
+            </div>
+          </div>
+
+          <!-- Free Rotate dial -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Free Rotate</div>
+            <div class="rotation-dial-wrap">
+              <div id="rotationDial">
+                <div id="dialPointer"></div>
+                <div id="dialCenter"></div>
+              </div>
+              <span id="dialAngleLabel">0°</span>
+            </div>
+          </div>
+
+          <!-- Zoom -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Zoom</div>
+            <div class="icon-btn-row">
+              <button class="icon-btn" onclick="zoomImage(-0.1)" title="Zoom Out">−</button>
+              <button class="icon-btn" onclick="zoomImage(0.1)"  title="Zoom In">+</button>
+            </div>
+          </div>
+
+          <!-- Resize Handles Toggle -->
+          <div class="ctrl-section">
+            <div class="ctrl-label">Resize</div>
+            <div class="icon-btn-row">
+              <button class="icon-btn" id="resizeToggleBtn" onclick="toggleHandles()" title="Toggle resize handles" style="width:100%; font-size:12px; font-weight:bold;">Handles: Off</button>
+            </div>
+          </div>
+
+          <!-- Push actions to bottom -->
+          <div class="ctrl-spacer"></div>
+
+          <!-- Actions -->
+          <div class="editor-actions">
+            <button id="resetBtn" onclick="resetEditor()">Reset</button>
+            <button id="closeEditorBtn" onclick="closeEditor()">Close</button>
+          </div>
+
+        </div>
       </div>
     </div>
-    {% endfor %}
   </div>
 
   <!-- Scroll to Top Button -->
@@ -224,61 +766,435 @@
       });
     }
 
-    // Form submission
-    document.getElementById("imageForm").addEventListener("submit", function (event) {
-      event.preventDefault();
-      const urls = document.getElementById("urls").value.split("\n");
-      const gallery = document.getElementById("imageGallery");
-      gallery.innerHTML = "";
+    const BATCH_SIZE = 30;
+    let allUrls = [];
+    let currentIndex = 0;
+    let sentinelObserver = null;
 
-      urls.forEach((url, index) => {
-        url = url.trim();
-        if (url) {
-          const container = document.createElement("div");
-          container.className = "image-container";
+    function createCard(url, index) {
+      const container = document.createElement("div");
+      container.className = "image-container";
 
-          const number = document.createElement("div");
-          number.className = "image-number";
-          number.textContent = `Image ${index + 1}`;
+      const number = document.createElement("div");
+      number.className = "image-number";
+      number.textContent = `Image ${index}`;
 
-          const img = document.createElement("img");
-          img.src = url;
-          img.alt = "Image";
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Image";
 
-          const urlRow = document.createElement("div");
-          urlRow.className = "url-row";
+      const urlRow = document.createElement("div");
+      urlRow.className = "url-row";
 
-          const caption = document.createElement("p");
-          caption.className = "url-text";
-          caption.textContent = url;
-          caption.title = url;
+      const caption = document.createElement("p");
+      caption.className = "url-text";
+      caption.textContent = url;
+      caption.title = url;
 
-          const copyBtn = document.createElement("button");
-          copyBtn.className = "copy-btn";
-          copyBtn.textContent = "Copy";
-          copyBtn.onclick = () => copyToClipboard(copyBtn, url);
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "copy-btn";
+      copyBtn.textContent = "Copy";
+      copyBtn.onclick = () => copyToClipboard(copyBtn, url);
 
-          urlRow.appendChild(caption);
-          urlRow.appendChild(copyBtn);
+      const editBtn = document.createElement("button");
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "Edit";
+      editBtn.onclick = () => openEditor(url, index);
 
-          container.appendChild(number);
-          container.appendChild(img);
-          container.appendChild(urlRow);
-          gallery.appendChild(container);
-        }
+      urlRow.appendChild(caption);
+      urlRow.appendChild(editBtn);
+      urlRow.appendChild(copyBtn);
+      container.appendChild(number);
+      container.appendChild(img);
+      container.appendChild(urlRow);
+
+      return container;
+    }
+
+    // ── Editor (CSS filters — no CORS issues) ────────────────
+    let currentRotation = 0;
+    let currentZoom     = 1;
+
+    function openEditor(url, index) {
+      const editorImg = document.getElementById("editorImg");
+      document.getElementById("editorTitle").textContent = `Canvas — Image ${index}`;
+      resetEditor();
+      document.getElementById("editorOverlay").classList.add("open");
+      document.body.style.overflow = "hidden";
+
+      editorImg.style.width     = "";
+      editorImg.style.height    = "";
+      editorImg.style.maxWidth  = "";
+      editorImg.style.maxHeight = "";
+
+      editorImg.onload = function () {
+        const wrap   = document.getElementById("editorImgWrap");
+        const maxW   = wrap.clientWidth  - 16;
+        const maxH   = wrap.clientHeight - 16;
+        const natW   = editorImg.naturalWidth;
+        const natH   = editorImg.naturalHeight;
+        const scale  = Math.min(1, maxW / natW, maxH / natH);
+        const finalW = Math.round(natW * scale);
+        const finalH = Math.round(natH * scale);
+        editorImg.style.width     = finalW + "px";
+        editorImg.style.height    = finalH + "px";
+        editorImg.style.maxWidth  = "none";
+        editorImg.style.maxHeight = "none";
+      };
+      editorImg.src = url;
+    }
+
+    function closeEditor() {
+      document.getElementById("editorOverlay").classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    function applyFilters() {
+      const brightness = parseInt(document.getElementById("brightnessSlider").value);
+      const contrast   = parseInt(document.getElementById("contrastSlider").value);
+      document.getElementById("brightnessVal").textContent = brightness;
+      document.getElementById("contrastVal").textContent   = contrast;
+      const cssBrightness = (brightness + 100) / 100;
+      const cssContrast   = (contrast   + 100) / 100;
+      document.getElementById("editorImg").style.filter = `brightness(${cssBrightness}) contrast(${cssContrast})`;
+    }
+
+    function rotateImage(deg) {
+      currentRotation = (currentRotation + deg + 360) % 360;
+      applyTransform();
+    }
+
+    function zoomImage(delta) {
+      currentZoom = Math.min(4, Math.max(0.2, +(currentZoom + delta).toFixed(1)));
+      applyTransform();
+    }
+
+    const resizeCont = document.getElementById("resizeContainer");
+
+    function applyTransform() {
+      resizeCont.style.transform =
+        `translate(${panX}px, ${panY}px) rotate(${currentRotation + dialAngle}deg) scale(${currentZoom})`;
+    }
+
+    function resetEditor() {
+      currentRotation = 0;
+      currentZoom     = 1;
+      panX = 0; panY = 0;
+      document.getElementById("brightnessSlider").value    = 0;
+      document.getElementById("contrastSlider").value      = 0;
+      document.getElementById("brightnessVal").textContent = 0;
+      document.getElementById("contrastVal").textContent   = 0;
+      const img = document.getElementById("editorImg");
+      img.style.filter    = "";
+      img.style.cursor    = "grab";
+      img.style.width     = "";
+      img.style.height    = "";
+      img.style.maxWidth  = "";
+      img.style.maxHeight = "";
+      dialAngle = 0;
+      if (dialPointer) dialPointer.style.transform = "translateX(-50%) rotate(0deg)";
+      if (dialLabel)   dialLabel.textContent = "0°";
+      resizeCont.style.transform = "translate(0px, 0px) rotate(0deg) scale(1)";
+      document.getElementById("resizeLabel").textContent = "";
+      // Reset handles toggle
+      handlesOn = false;
+      resizeCont.classList.remove("handles-on");
+      const btn = document.getElementById("resizeToggleBtn");
+      if (btn) { btn.textContent = "Handles: Off"; btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; }
+    }
+
+    // ── Resize handles ───────────────────────────────────────
+    let resizing     = false;
+    let resizeDir    = "";
+    let resizeStartX = 0, resizeStartY = 0;
+    let resizeStartW = 0, resizeStartH = 0;
+    let resizePanStartX = 0, resizePanStartY = 0;
+    let resizeRafId  = null;
+    let pendingResizeX = 0, pendingResizeY = 0;
+
+    function initResize(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      resizing  = true;
+      resizeDir = e.currentTarget.dataset.dir;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      resizeStartX    = clientX;
+      resizeStartY    = clientY;
+      resizeStartW    = imgEl.offsetWidth;
+      resizeStartH    = imgEl.offsetHeight;
+      resizePanStartX = panX;
+      resizePanStartY = panY;
+      imgEl.style.width     = resizeStartW + "px";
+      imgEl.style.height    = resizeStartH + "px";
+      imgEl.style.maxWidth  = "none";
+      imgEl.style.maxHeight = "none";
+      document.addEventListener("mousemove", doResize);
+      document.addEventListener("mouseup",   endResize);
+      document.addEventListener("touchmove", doResize, { passive: false });
+      document.addEventListener("touchend",  endResize);
+    }
+
+    function doResize(e) {
+      if (!resizing) return;
+      if (e.cancelable) e.preventDefault();
+      pendingResizeX = e.touches ? e.touches[0].clientX : e.clientX;
+      pendingResizeY = e.touches ? e.touches[0].clientY : e.clientY;
+      if (resizeRafId) return;
+      resizeRafId = requestAnimationFrame(applyResize);
+    }
+
+    function applyResize() {
+      resizeRafId = null;
+      const dx = pendingResizeX - resizeStartX;
+      const dy = pendingResizeY - resizeStartY;
+
+      let newW = resizeStartW;
+      let newH = resizeStartH;
+      let adjX = 0, adjY = 0;
+
+      if (resizeDir.includes("e")) { newW = Math.max(40, resizeStartW + dx); }
+      if (resizeDir.includes("s")) { newH = Math.max(40, resizeStartH + dy); }
+      if (resizeDir.includes("w")) {
+        newW = Math.max(40, resizeStartW - dx);
+        adjX = (resizeStartW - newW) / 2;
+      }
+      if (resizeDir.includes("n")) {
+        newH = Math.max(40, resizeStartH - dy);
+        adjY = (resizeStartH - newH) / 2;
+      }
+
+      panX = resizePanStartX + adjX;
+      panY = resizePanStartY + adjY;
+
+      const changesW = resizeDir.includes("e") || resizeDir.includes("w");
+      const changesH = resizeDir.includes("n") || resizeDir.includes("s");
+
+      resizeCont.style.transform = `translate(${panX}px, ${panY}px) rotate(${currentRotation + dialAngle}deg) scale(${currentZoom})`;
+      if (changesW) { imgEl.style.width    = newW + "px"; imgEl.style.maxWidth  = "none"; }
+      if (changesH) { imgEl.style.height   = newH + "px"; imgEl.style.maxHeight = "none"; }
+      document.getElementById("resizeLabel").textContent = `${Math.round(newW)} × ${Math.round(newH)}`;
+    }
+
+    function endResize() {
+      resizing = false;
+      document.removeEventListener("mousemove", doResize);
+      document.removeEventListener("mouseup",   endResize);
+      document.removeEventListener("touchmove", doResize);
+      document.removeEventListener("touchend",  endResize);
+    }
+
+    document.querySelectorAll(".rh").forEach(h => {
+      h.addEventListener("mousedown",  initResize);
+      h.addEventListener("touchstart", initResize, { passive: false });
+    });
+
+    let handlesOn = false;
+    function toggleHandles() {
+      handlesOn = !handlesOn;
+      resizeCont.classList.toggle("handles-on", handlesOn);
+      const btn = document.getElementById("resizeToggleBtn");
+      btn.textContent     = handlesOn ? "Handles: On" : "Handles: Off";
+      btn.style.background  = handlesOn ? "#007BFF" : "";
+      btn.style.color       = handlesOn ? "white"   : "";
+      btn.style.borderColor = handlesOn ? "#007BFF" : "";
+    }
+
+    // ── Free Rotation Dial ───────────────────────────────────
+    let dialAngle    = 0;   // free-rotate angle (degrees)
+    let dialDragging = false;
+    let dialCenterX  = 0, dialCenterY = 0;
+
+    const dial        = document.getElementById("rotationDial");
+    const dialPointer = document.getElementById("dialPointer");
+    const dialLabel   = document.getElementById("dialAngleLabel");
+
+    function updateDial(angle) {
+      // Normalize to -180 to +180
+      let norm = ((angle % 360) + 360) % 360;
+      if (norm > 180) norm -= 360;
+      dialAngle = norm;
+      dialPointer.style.transform = `translateX(-50%) rotate(${dialAngle}deg)`;
+      const sign = dialAngle > 0 ? "+" : "";
+      dialLabel.textContent = `${sign}${Math.round(dialAngle)}°`;
+      resizeCont.style.transform =
+        `translate(${panX}px, ${panY}px) rotate(${currentRotation + dialAngle}deg) scale(${currentZoom})`;
+    }
+
+    function getAngleFromCenter(cx, cy, px, py) {
+      return Math.atan2(py - cy, px - cx) * (180 / Math.PI) + 90;
+    }
+
+    dial.addEventListener("mousedown", (e) => {
+      dialDragging = true;
+      const rect   = dial.getBoundingClientRect();
+      dialCenterX  = rect.left + rect.width  / 2;
+      dialCenterY  = rect.top  + rect.height / 2;
+      e.preventDefault();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!dialDragging) return;
+      updateDial(getAngleFromCenter(dialCenterX, dialCenterY, e.clientX, e.clientY));
+    });
+
+    window.addEventListener("mouseup", () => { dialDragging = false; });
+
+    // Touch support
+    dial.addEventListener("touchstart", (e) => {
+      dialDragging = true;
+      const rect  = dial.getBoundingClientRect();
+      dialCenterX = rect.left + rect.width  / 2;
+      dialCenterY = rect.top  + rect.height / 2;
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      if (!dialDragging || e.touches.length !== 1) return;
+      updateDial(getAngleFromCenter(dialCenterX, dialCenterY, e.touches[0].clientX, e.touches[0].clientY));
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => { dialDragging = false; });
+
+    // ── Pan ───────────────────────────────────────────────────
+    let panX = 0, panY = 0;
+    let startX = 0, startY = 0;
+    let isDragging = false;
+    let panRafId = null;
+    let pendingPanX = 0, pendingPanY = 0;
+
+    const imgEl   = document.getElementById("editorImg");
+    const imgWrap = document.getElementById("editorImgWrap");
+
+    imgEl.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+      imgEl.style.cursor = "grabbing";
+      e.preventDefault();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      pendingPanX = e.clientX - startX;
+      pendingPanY = e.clientY - startY;
+      if (panRafId) return;
+      panRafId = requestAnimationFrame(() => {
+        panRafId = null;
+        panX = pendingPanX;
+        panY = pendingPanY;
+        resizeCont.style.transform = `translate(${panX}px, ${panY}px) rotate(${currentRotation + dialAngle}deg) scale(${currentZoom})`;
       });
     });
 
-    // Show scroll-to-top button
-    window.onscroll = function () {
-      const btnWrapper = document.getElementById("scrollTopWrapper");
-      btnWrapper.style.display =
-        document.body.scrollTop > 100 || document.documentElement.scrollTop > 100
-          ? "flex"
-          : "none";
-    };
+    window.addEventListener("mouseup", () => {
+      isDragging = false;
+      imgEl.style.cursor = "grab";
+    });
 
-    // Scroll to top smoothly
+    imgEl.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      isDragging = true;
+      startX = e.touches[0].clientX - panX;
+      startY = e.touches[0].clientY - panY;
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      panX = e.touches[0].clientX - startX;
+      panY = e.touches[0].clientY - startY;
+      resizeCont.style.transform = `translate(${panX}px, ${panY}px) rotate(${currentRotation + dialAngle}deg) scale(${currentZoom})`;
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => { isDragging = false; });
+
+    // Mouse wheel to zoom towards cursor
+    imgEl.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const delta     = e.deltaY > 0 ? -0.1 : 0.1;
+      const prevZoom  = currentZoom;
+      currentZoom     = Math.min(4, Math.max(0.2, +(currentZoom + delta).toFixed(2)));
+      const zoomRatio = currentZoom / prevZoom;
+      const rect = imgEl.getBoundingClientRect();
+      const ox   = e.clientX - (rect.left + rect.width  / 2);
+      const oy   = e.clientY - (rect.top  + rect.height / 2);
+      panX = panX + ox - ox * zoomRatio;
+      panY = panY + oy - oy * zoomRatio;
+      resizeCont.style.transform = `translate(${panX}px, ${panY}px) rotate(${currentRotation + dialAngle}deg) scale(${currentZoom})`;
+    }, { passive: false });
+
+    // Close modal on overlay click or Esc
+    document.getElementById("editorOverlay").addEventListener("click", function(e) {
+      if (e.target === this) closeEditor();
+    });
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") closeEditor();
+    });
+
+    // ── Batch loader ──────────────────────────────────────────
+    function loadNextBatch() {
+      const gallery = document.getElementById("imageGallery");
+      const oldSentinel = document.getElementById("sentinel");
+      if (oldSentinel) oldSentinel.remove();
+      if (currentIndex >= allUrls.length) return;
+
+      const fragment = document.createDocumentFragment();
+      const end = Math.min(currentIndex + BATCH_SIZE, allUrls.length);
+      for (let i = currentIndex; i < end; i++) {
+        fragment.appendChild(createCard(allUrls[i], i + 1));
+      }
+      currentIndex = end;
+
+      if (currentIndex < allUrls.length) {
+        const sentinel = document.createElement("div");
+        sentinel.id = "sentinel";
+        sentinel.style.height = "1px";
+        fragment.appendChild(sentinel);
+        gallery.appendChild(fragment);
+        sentinelObserver = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting) {
+            sentinelObserver.disconnect();
+            loadNextBatch();
+          }
+        }, { rootMargin: "300px" });
+        sentinelObserver.observe(document.getElementById("sentinel"));
+      } else {
+        gallery.appendChild(fragment);
+      }
+    }
+
+    document.getElementById("imageForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      allUrls = document.getElementById("urls").value
+        .split("\n")
+        .map(u => u.trim())
+        .filter(Boolean);
+      currentIndex = 0;
+      const gallery = document.getElementById("imageGallery");
+      gallery.innerHTML = "";
+      if (sentinelObserver) sentinelObserver.disconnect();
+      loadNextBatch();
+    });
+
+    // ── Header ────────────────────────────────────────────────
+    const header      = document.getElementById("siteHeader");
+    const placeholder = document.getElementById("headerPlaceholder");
+
+    function syncPlaceholder() {
+      placeholder.style.height = header.offsetHeight + "px";
+    }
+
+    window.addEventListener("scroll", function () {
+      const btnWrapper = document.getElementById("scrollTopWrapper");
+      const scrolled = window.scrollY > 80;
+      btnWrapper.style.display = scrolled ? "flex" : "none";
+      header.classList.toggle("shrunk", scrolled);
+      setTimeout(syncPlaceholder, 320);
+    }, { passive: true });
+
+    window.addEventListener("load", syncPlaceholder);
+    syncPlaceholder();
+
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
